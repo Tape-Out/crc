@@ -9,7 +9,8 @@ regs:
     offset: 0x00
     desc: write start to begin again from the seed
     fields:
-      - { name: start, bits: "0:0", sw: w, hw: na, swmod: true, reset: 0 }
+      # swmod 是「这个寄存器被写过」、不看写的值；要「写 1 才重来」得带上写进来的值（can、gzip 同一个坑）
+      - { name: start, bits: "0:0", sw: w, hw: na, swmod: true, wrdata: true, reset: 0 }
   - name: cfg
     offset: 0x04
     desc: model width and bit order

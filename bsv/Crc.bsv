@@ -37,7 +37,7 @@ module mkCrc#(CrcCfg cfg)(CrcIfc#(aw, dw, maxWidth))
   UInt#(6) width = unpack(r.cfg_width);
 
   rule mark;
-    if (r.ctrl_start_wr) pend[1] <= tagged Start;
+    if (r.ctrl_start_wr && r.ctrl_start_wr_val == 1) pend[1] <= tagged Start;
     else if (r.data_wr) pend[1] <= tagged Feed r.data_wr_val;
   endrule
 

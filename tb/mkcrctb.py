@@ -60,13 +60,14 @@ ops = []            # (类别, 地址, 数据, 第几个模型)：0 写、1 空�
 for i, (n, w, p, s, ri, ro, x, want) in enumerate(cases):
     ops += [(0, CFG, w | (int(ri) << 8) | (int(ro) << 9), i),
             (0, POLY, p, i), (0, SEED, s, i), (0, XOROUT, x, i), (0, CTRL, 1, i)]
-    ops += [(0, DATA, b, i) for b in MSG]
+    # 喂到第四个字节时往 ctrl 写 0：start 是写 1 才重来，写 0 若也重来，结果就成了 "56789" 的 CRC
+    ops += [(0, DATA, b, i) for b in MSG[:4]] + [(0, CTRL, 0, i)] + [(0, DATA, b, i) for b in MSG[4:]]
     ops += [(1, 0, 0, i), (1, 0, 0, i), (2, RESULT, want, i)]
 
 body = "\n".join(f"    16'd{j}: return Op {{ kind: {k}, addr: 8'h{a:02X}, data: 32'h{d:08X}, idx: {i} }};"
                  for j, (k, a, d, i) in enumerate(ops))
 names = "\n".join(f'    {i}: return "{c[0]}";' for i, c in enumerate(cases))
-verdict = (f"{len(cases)} catalogue models give their check values at maxWidth {maxw}"
+verdict = (f"{len(cases)} catalogue models give their check values at maxWidth {maxw} with a 0 written to ctrl mid-message"
            + ("" if reflect else ", and refin and refout cannot be set with reflect off"))
 
 txt = f'''package Crc{label}Tb;
