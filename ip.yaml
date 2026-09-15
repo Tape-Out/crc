@@ -1,0 +1,102 @@
+name: crc
+version: 0.1.0
+spec: '0.1'
+kind: ip
+lang:
+- bsv
+- bh
+identity:
+  slug: crc-tapeout-bsv
+  display_name: Programmable CRC engine
+  summary: CRC engine programmed at run time with width, polynomial, seed, 
+    reflection and final XOR.
+  category: peripheral
+  subcategories:
+  - crc
+  ip_family: crc
+  integration_profile:
+  - apb4-slave
+  maturity: simulated
+contract:
+  version: 1
+  ctrl:
+    shape: flat
+    aw: 8
+    dw: 32
+params:
+  # 寄存器的位宽，也是软件能选的最大宽度。CRC-8 以下的用途（1-Wire、SD 的 CRC-7）
+  # 不必为 32 位的多项式与移位付面积
+  maxWidth:
+    type: int
+    default: 32
+    range:
+    - 8
+    - 32
+features:
+  # 关掉之后 refin/refout 两位不存在，只剩不反射的算法：少一对翻转的多路选择
+  reflect:
+    type: bool
+    default: true
+    area:
+      per: maxWidth
+      points:
+        '8': 89.32
+        '32': 58.24
+emit:
+- kind: bsv
+  package: Crc
+  module: mkCrc
+  config_type: CrcCfg
+  interface: CrcIfc
+  ctrl: regs
+- kind: verilog-flat
+  bus: apb4
+deps:
+  hwcore: ^0.1
+  amba: ^0.1
+area:
+  base:
+    per: maxWidth
+    points:
+      '8': 1259.72
+      '32': 4384.8
+  margin: 0.013
+  model: points-additive
+  error:
+    bound: 0.013
+    sign: over
+    note: first measured by ran recal --init at the range ends and the default 
+      of each parameter; the margin is the worst underestimate at 2 off-grid 
+      probes
+  measured:
+  - at:
+      maxWidth: 8
+      reflect: false
+    um2: 1259.72
+  - at:
+      maxWidth: 32
+      reflect: false
+    um2: 4384.8
+  - at:
+      maxWidth: 8
+      reflect: true
+    um2: 1349.04
+  - at:
+      maxWidth: 32
+      reflect: true
+    um2: 4443.04
+  - at:
+      maxWidth: 20
+      reflect: false
+    um2: 2754.08
+  - at:
+      maxWidth: 20
+      reflect: true
+    um2: 2931.88
+  corner:
+    tool: ecc
+    pdk: ics55
+    freq_mhz: 100
+    measured: '2026-09-15'
+    toolchain: bsc 2026.01 · yosys 0.68+195 · ecc 0.1.0a11
+    gen_digest: sha256:364a1c6a7d79c37f

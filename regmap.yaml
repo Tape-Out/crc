@@ -1,0 +1,39 @@
+ip: crc
+contract: { aw: 8, dw: 32 }
+base: 0x1000E000
+size: 0x100
+params: [maxWidth]
+# 复位后的模型是 CRC-8/MAXIM-DOW（1-Wire 用的那个）：宽度 8 对每一个 maxWidth 都合法
+regs:
+  - name: ctrl
+    offset: 0x00
+    desc: write start to begin again from the seed
+    fields:
+      - { name: start, bits: "0:0", sw: w, hw: na, swmod: true, reset: 0 }
+  - name: cfg
+    offset: 0x04
+    desc: model width and bit order
+    fields:
+      - { name: width,  bits: "5:0", sw: rw, hw: r, reset: 8, legal: [ { min: 1, max: maxWidth } ] }
+      - { name: refin,  bits: "8:8", sw: rw, hw: r, reset: 1, feature: reflect }
+      - { name: refout, bits: "9:9", sw: rw, hw: r, reset: 1, feature: reflect }
+  - name: poly
+    offset: 0x08
+    desc: generator polynomial without the top term
+    fields: [ { name: val, width: maxWidth, sw: rw, hw: r, reset: 0x31 } ]
+  - name: seed
+    offset: 0x0C
+    desc: register value before the first byte
+    fields: [ { name: val, width: maxWidth, sw: rw, hw: r, reset: 0 } ]
+  - name: xorout
+    offset: 0x10
+    desc: value XORed into the result
+    fields: [ { name: val, width: maxWidth, sw: rw, hw: r, reset: 0 } ]
+  - name: data
+    offset: 0x14
+    desc: write one byte to feed it
+    fields: [ { name: val, bits: "7:0", sw: w, hw: na, swmod: true, wrdata: true, reset: 0 } ]
+  - name: result
+    offset: 0x18
+    desc: CRC of the bytes fed since start, after reflection and the final XOR
+    fields: [ { name: val, width: maxWidth, sw: r, hw: w, volatile: true } ]

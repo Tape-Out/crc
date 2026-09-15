@@ -1,0 +1,19 @@
+package CrcWide where
+
+-- 软件在运行时选宽度 k，寄存器是编译期的 w 位。把 k 位的模型左对齐进 w 位，
+-- Gf2 的步进函数原样可用：多项式与寄存器的低 w-k 位进来是零、出去还是零。
+-- 读结果时再对齐回来；要反射就整体翻转 w 位，那 k 位正好落到低位。
+
+import Gf2
+
+wideModel :: UInt 6 -> Bool -> Bit w -> Bit w -> CrcModel w
+wideModel k rin p s =
+  let sh :: Nat
+      sh = fromInteger (valueOf w) - zeroExtend (pack k)
+  in  CrcModel { poly = p << sh; seed = s << sh; refin = rin; refout = False; xorout = 0 }
+
+narrow :: UInt 6 -> Bool -> Bit w -> Bit w -> Bit w
+narrow k rout xo c =
+  let sh :: Nat
+      sh = fromInteger (valueOf w) - zeroExtend (pack k)
+  in  (if rout then reverseBits c else c >> sh) ^ xo
