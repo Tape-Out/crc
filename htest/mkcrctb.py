@@ -72,7 +72,7 @@ verdict = (f"{len(cases)} catalogue models give their check values at maxWidth {
 
 txt = f'''package Crc{label}Tb;
 
-// 由 tb/mkcrctb.py 生成，勿手改。这一点：maxWidth={maxw} reflect={reflect}
+// 由 htest/mkcrctb.py 生成，勿手改。这一点：maxWidth={maxw} reflect={reflect}
 
 import RegIf::*;
 import Crc::*;
